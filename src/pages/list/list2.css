@@ -1,0 +1,121 @@
+body{
+    background-color: rgb(43, 174, 225);
+}
+/* Container styles */
+.candidate-listcontainer {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    overflow-x: auto; /* Enable horizontal scroll on small screens */
+  }
+  
+  .candidate-listcontainer h1 {
+    margin-bottom: 30px;
+    font-size: 40px;
+  }
+  select {
+    padding: 7px;
+    cursor: pointer;
+  }
+
+
+
+  /* Filter section styles */
+  .filter-section {
+    margin-bottom: 20px;
+    display: inline-block;
+    margin-left: 20px;
+    outline: none;
+    
+  }
+ 
+  .filter-section select,
+  .filter-section input[type="number"],
+  .filter-section input[type="text"] {
+    display: block;
+    padding: 8px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 150px; /* Adjust maximum width as needed */
+    box-sizing: border-box; /* Ensures padding and border are included in width */
+    border-radius: 7px;
+    outline: none;
+    border: none;
+  }
+  .filter-section select:focus,
+  .filter-section input[type="number"]:focus,
+  .filter-section input[type="text"]:focus {
+   outline: none;
+  }
+
+  .filter-section select{
+    margin-left: 0px !important;
+  }
+  .filter-section input[type="text"] {
+    max-width: 400px;
+  }
+  /* Table styles */
+  .candidate-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .candidate-table th,
+  .candidate-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .candidate-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  .candidate-table img {
+    max-width: 100px;
+    height: auto; /* Maintain aspect ratio of images */
+  }
+  
+  .candidate-table td[colspan="7"] {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+  }
+  
+  /* Responsive adjustments */
+  @media only screen and (max-width: 768px) {
+    .candidate-listcontainer {
+      padding: 10px;
+    }
+  
+    .filter-section {
+      margin-left: 0;
+      margin-bottom: 10px;
+      display: block;
+    }
+  
+    .filter-section select,
+    .filter-section input[type="number"],
+    .filter-section input[type="text"] {
+      width: 30%;
+      display: block;
+      min-width: 300px;
+    }
+  
+    .candidate-table {
+      width: 100%;
+      overflow-x: auto; /* Enable horizontal scroll on small screens */
+    }
+  
+    .candidate-table th,
+    .candidate-table td {
+      font-size: 14px;
+    }
+  
+    .candidate-table img {
+      max-width: 80px;
+    }
+  }
+  
