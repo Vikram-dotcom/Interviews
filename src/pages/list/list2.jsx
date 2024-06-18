@@ -9,6 +9,8 @@ const CandidateList = () => {
     const [filteredCandidates, setFilteredCandidates] = useState([]);
     const [filterStatus, setFilterStatus] = useState(''); 
     const [filterMarks, setFilterMarks] = useState(''); 
+    const [filterDate,setFilterDate] = useState('');
+    const [FilterScheduleDate,setFilterScheduleDate] = useState('');
     const [filterName, setnameFilter] = useState(''); 
 
     useEffect(() => {
@@ -16,9 +18,21 @@ const CandidateList = () => {
             try {
                 const dataSnapshot = await getDocs(collection(db, 'candidates'));
                 const data = dataSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                data.sort((a, b) => a.profileID - b.profileID);
-                setCandidates(data);
-                setFilteredCandidates(data); 
+                //data.sort((a, b) => a.profileID - b.profileID);
+                const slotOrder = ['Blue', 'Green', 'Orange'];
+
+                const groupedCandidates = data.reduce((acc, candidate) => {
+                  if (!acc[candidate.candidate_slot]) {
+                      acc[candidate.candidate_slot] = [];
+                  }
+                  acc[candidate.candidate_slot].push(candidate);
+                  return acc;
+              }, {});
+          console.log('groupedCandidates',groupedCandidates)
+              const sortedCandidates = slotOrder.flatMap(slot => groupedCandidates[slot] || []);
+              console.log('sortedCandidates',sortedCandidates)
+                setCandidates(sortedCandidates);
+                setFilteredCandidates(sortedCandidates); 
             } catch (error) {
                 console.error('Error fetching candidates: ', error);
             }
@@ -42,26 +56,60 @@ const CandidateList = () => {
             if (filterName !== '') {
                 filteredData = filteredData.filter(candidate => candidate.candidate_name.toLowerCase().includes(filterName.toLowerCase()));
             }
-           
+
+            if(filterDate !== ''){
+                filteredData = filteredData.filter(candidate => {
+                    console.log(candidate.candidate_profiledate,filterDate);
+                    return (candidate.candidate_profiledate == filterDate)}
+                )
+            }
+            if(FilterScheduleDate !== ''){
+                filteredData = filteredData.filter(candidate => {
+                    console.log(candidate.candidate_profiledate,FilterScheduleDate);
+                    return (candidate.candidate_profiledate == FilterScheduleDate)}
+                )
+            }
+            
             setFilteredCandidates(filteredData);
         };
 
         filterData();
-    }, [filterStatus, filterMarks, filterName, candidates]);
+    }, [filterStatus, filterMarks, filterName, filterDate, FilterScheduleDate,candidates]);
 
-    const handleStatusChange = async (event, candidateId) => {
-        const newStatus = event.target.value; 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[date.getMonth()];
+        const day = date.getDate();
+        return `${month} ${day}`;
+      };
+
+   
+
+    
+    const handleStatusChange = async (event, candidateId, fieldtoset) => {
+        const newvalue = event.target.value; 
+        console.log(fieldtoset);
         try {
            
+            if (fieldtoset == 'candidate_status'){
             await updateDoc(doc(db, 'candidates', candidateId), {
-                candidate_status: newStatus
+                candidate_status: newvalue
             });
+            }
 
+            if (fieldtoset == 'candidate_nextscheduledate'){
+                await updateDoc(doc(db, 'candidates', candidateId), {
+                    candidate_nextscheduledate: newvalue
+                });
+                }
             
             const updatedCandidates = candidates.map(candidate => {
                 console.log(candidate.id, candidateId)
                 if (candidate.id === candidateId) {
-                    return { ...candidate, candidate_status: newStatus };
+                    console.log('line96',fieldtoset)
+                    return { ...candidate, fieldtoset: newvalue };
                 }
                 return candidate;
             });
@@ -73,10 +121,18 @@ const CandidateList = () => {
         }
     };
 
+
     const handleMarksChange = event => {
         setFilterMarks(event.target.value); 
     };
 
+    const handleDateChange = event =>{
+        setFilterDate(event.target.value);
+    }
+    const handleScheduleDateChange = event =>{
+        setFilterScheduleDate(event.target.value);
+    }
+    
     const handlenameChange = event => {
         setnameFilter(event.target.value); 
     };
@@ -87,7 +143,9 @@ const CandidateList = () => {
                 <Link to="/">
                     <img style={{ display: 'inline-block', width: '51px' }} src="https://static.vecteezy.com/system/resources/thumbnails/014/391/893/small_2x/home-icon-isolated-on-transparent-background-black-symbol-for-your-design-free-png.png" />
                 </Link>
-                <h1 style={{ display: 'inline-block', color: ' rgb(130, 126, 126);' }}>Candidates List</h1>
+                <Link to="/upload">
+                <h1 style={{ display: 'inline-block',color:'black' }}>Candidates List</h1>
+                </Link>
             </div>
             <div style={{ marginLeft: '0' }} className="filter-section">
                 <label htmlFor="statusFilter">Status:</label>
@@ -120,6 +178,28 @@ const CandidateList = () => {
                 />
             </div>
 
+            <div className='filter-section'>
+                <label htmlFor='dateFilter'>Date</label>
+                <input
+                    type="date"
+                    id="dateFilter"
+                    value={filterDate}
+                    onChange={handleDateChange}
+                    
+                />
+            </div>
+
+            {/* <div className='filter-section'>
+                <label htmlFor='scheduleDateFilter'>Scheduled Date</label>
+                <input
+                    type="date"
+                    id="scheduleDateFilter"
+                    value={filterDate}
+                    onChange={handleScheduleDateChange}
+                    
+                />
+            </div> */}
+
             <div style={{ float: 'right', display: 'inline-block', marginTop: '71px' }}>
                 {filteredCandidates.length} records
             </div>
@@ -128,7 +208,7 @@ const CandidateList = () => {
                 <thead style={{ borderRadius: '7px' }}>
                     <tr>
                         <th style={{ width: '7%', borderRight: '1px solid #cbcaca' }}>Profile#</th>
-                        <th style={{ width: '13%', borderRight: '1px solid #cbcaca' }}>Date</th>
+                        <th style={{ width: '8%', borderRight: '1px solid #cbcaca' }}>Date</th>
                         <th style={{ width: '13%', borderRight: '1px solid #cbcaca' }}>Name</th>
                         <th style={{ width: '5%', borderRight: '1px solid #cbcaca' }}>Marks</th>
                         <th style={{ width: '8%', borderRight: '1px solid #cbcaca' }}>Education</th>
@@ -142,16 +222,16 @@ const CandidateList = () => {
                 <tbody>
                     {filteredCandidates.length > 0 ? (
                         filteredCandidates.map(candidate => (
-                            <tr key={candidate.id} style={{ backgroundColor: 'white' }}>
-                                <td style={{ textAlign: 'center' }}>{candidate.profileID}</td>
-                                <td style={{ textAlign: 'left' }}>{candidate.candidate_profiledate}</td>
-                                <td>{candidate.candidate_name}</td>
+                            <tr key={candidate.id} style={{ backgroundColor: 'white', boxShadow: `inset -0.5px -1px 0px ${candidate.candidate_slot}`}}>
+                                <td style={{ textAlign: 'center'}}>{candidate.profileID}</td>
+                                <td style={{ textAlign: 'left' }}>{formatDate(candidate.candidate_profiledate)}</td>
+                                <td style={{ userSelect:'text' }}>{candidate.candidate_name}</td>
                                 <td style={{ textAlign: 'center' }}>{candidate.candidate_marks}</td>
                                 <td>{candidate.candidate_education}</td>
                                 <td style={{ textAlign: 'center' }}>
                                     <select className="listselect" style={{ borderRadius: '7px' }}
                                         value={candidate.candidate_status}
-                                        onChange={e => handleStatusChange(e, candidate.id)}
+                                        onChange={e => handleStatusChange(e, candidate.id, 'candidate_status')}
                                     >
                                         <option value="">Select Status</option>
                                         <option value="ER">ER</option>
@@ -161,13 +241,17 @@ const CandidateList = () => {
                                 <td style={{ textAlign: 'center' }}>{candidate.candidate_phone}</td>
                                 <td style={{ textAlign: 'center' }}>{candidate.candidate_comments}</td>
                                 <td style={{ textAlign: 'center' }}>{candidate.candidate_notes}</td>
-                                <td style={{ textAlign: 'center' }}>{candidate.candidate_nextscheduledate}</td>
-
+                                <td style={{ textAlign: 'center' }}>
+                                <div style={{position:'relative'}}>
+                                    <input type='date' id='nextScheduleDate' onChange={e => handleStatusChange(e, candidate.id, 'candidate_nextscheduledate')} 
+                                    value = {candidate.candidate_nextscheduledate} />
+                                </div>
+                                    </td>
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="10">No candidates found</td>
+                            <td style={{ textAlign: 'center' }} colSpan="10">No candidates found</td>
                         </tr>
                     )}
                 </tbody>

@@ -40,6 +40,20 @@ const CandidateForm = () => {
     candidate_photo: null,
   });
 
+  const handleInput = (event) => {
+    const input = event.target.value;
+    const digitsOnly = input.replace(/\D/g, ''); 
+  
+    event.target.value = digitsOnly;
+    setFormData((prev) => ({
+      ...prev,
+      [event.target.name]: digitsOnly,
+    }));
+  };
+
+
+ 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -56,7 +70,7 @@ const CandidateForm = () => {
         break;
       case 'candidate_name':
        
-        if (/^[A-Za-z. ]{1,50}$/.test(value) || value === '') {
+        if (/^[A-Za-z. ]{1,50}$/.test(value)) {
           setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -65,24 +79,23 @@ const CandidateForm = () => {
         break;
       case 'candidate_phone':
         
-        if (/^[6-9]\d{9}$/.test(value) || value === '') {
+        if (/^[6-9]\d{9}$/.test(value)) { 
           setFormData((prev) => ({
             ...prev,
             [name]: value,
           }));
         }
         break;
+        
       case 'candidate_passedoutyear':
-       
-        const currentYear = new Date().getFullYear();
-        const inputYear = parseInt(value);
-        if (value.length === 4 && inputYear >= 2000 && inputYear <= currentYear + 1) {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        }
-        break;
+
+      if (/^\d{0,4}$/.test(value)) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
+    break;
       default:
        
         setFormData((prev) => ({
@@ -109,9 +122,9 @@ const CandidateForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const documentID = formData.candidate_slot.substring(0,1) + formData.candidate_name.replace(/[.\s]/g, '').substring(0,4) + formData.candidate_marks + formData.candidate_phone;
     try {
-      // Uploading photo to Firebase Storage
+     
       let photoURL = '';
       if (formData.candidate_photo) {
         const photoRef = ref(storage, `photos/${formData.candidate_name}`);
@@ -119,8 +132,7 @@ const CandidateForm = () => {
         photoURL = await getDownloadURL(photoRef);
       }
 
-      // Saving form data to Firestore
-      await setDoc(doc(db, 'candidates', formData.profileID), {
+      await setDoc(doc(db, 'candidates', documentID), {
         ...formData,
         candidate_photo: photoURL,
       });
@@ -166,7 +178,7 @@ const CandidateForm = () => {
     <div className='rightdiv'>
     <form onSubmit={handleSubmit} className="form-container">
          <div style={{backgroundColor:'white',textAlign:'center',height:'65px'}}>
-          <input style={{width:'170px'}} type="date" id="candidate_profiledate" name="candidate_profiledate" value={formData.candidate_profiledate} onChange={handleChange} required />
+          <input style={{width:'150px', textAlign:'center'}} type="date" id="candidate_profiledate" name="candidate_profiledate" value={formData.candidate_profiledate} onChange={handleChange} required />
         </div>
 
         <div className="form">
@@ -194,13 +206,14 @@ const CandidateForm = () => {
         </div>
         <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_phone">Phone:</label>
-          <input type="tel" id="candidate_phone" name="candidate_phone" value={formData.candidate_phone} onChange={handleChange} required />
+          <input type="tel" id="candidate_phone" name="candidate_phone" value={formData.candidate_phone} onInput={handleInput} onChange={handleChange} pattern="^[6-9]\d{9}$"
+            maxLength="10" required />
         </div>
         
        
         <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_passedoutyear">Passed Out Year:</label>
-          <input type="text" id="candidate_passedoutyear" name="candidate_passedoutyear" value={formData.candidate_passedoutyear} onChange={handleChange} required />
+          <input type="text" id="candidate_passedoutyear" name="candidate_passedoutyear" value={formData.candidate_passedoutyear} pattern="\d{4}" onChange={handleChange} maxLength={4} required />
         </div>
         <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_education">Education:</label>
@@ -211,8 +224,8 @@ const CandidateForm = () => {
         
             
           <label style={{color:'#827e7e'}} htmlFor="candidate_status">Status:</label>
-          <select id="candidate_status" name="candidate_status" value={formData.candidate_status} onChange={handleChange} >
-            <option style={{color:'#827e7e'}} value="">Select Status</option>
+          <select style={{color:'#827e7e'}}  id="candidate_status" name="candidate_status" value={formData.candidate_status} onChange={handleChange} >
+            <option value="">Select Status</option>
             <option value="ER">ER</option>
             <option value="Next Round">Next Round</option>
           </select>
@@ -220,7 +233,7 @@ const CandidateForm = () => {
           </div>
           <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_slot">Slot:</label>
-          <select id="candidate_slot" name="candidate_slot" value={formData.candidate_slot} onChange={handleChange} required>
+          <select  style={{color:'#827e7e'}}  id="candidate_slot" name="candidate_slot" value={formData.candidate_slot} onChange={handleChange} required>
             <option style={{color:'#827e7e'}} value="">Select Slot</option>
             <option value="Blue">10:00am - 10:30am</option>
             <option value="Green">12:00pm - 12:30pm</option>
@@ -245,6 +258,7 @@ const CandidateForm = () => {
           
           {formData.candidate_photo && (
             <span>
+              
               <img className='photouploadtick' src='https://www.shutterstock.com/image-vector/checkmark-icon-vector-on-white-600nw-1265668276.jpg' alt = "uploadedPhotoIndicator" style={{ maxWidth: '100px', maxHeight: '100px' }} />
             </span>
           )}

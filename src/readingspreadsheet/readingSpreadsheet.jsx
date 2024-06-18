@@ -44,7 +44,8 @@ const parseAndStoreData = async (data) => {
       if (index === 0) return;
 
       try {
-        const docRef = await addDoc(collection(db, 'candidates'), {
+        const documentID = row[4].substring(0,1) + row[1].replace(/[.\s]/g, '').substring(0,4) + row[2] + row[3];
+        const docRef = await addDoc(collection(db, 'candidates',documentID), {
           
           profileID: row[0],
           candidate_name: row[1],

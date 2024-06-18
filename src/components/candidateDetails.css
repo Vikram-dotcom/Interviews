@@ -10,10 +10,27 @@ body{
     
     height: 100%;
 }
+
+
+#candidate_nextscheduledate,#candidate_profiledate{
+  border-radius: 7px;
+  outline: none;
+  border: 1px solid #ccc;
+  padding: 7px;
+  cursor: pointer;
+}
+  #candidate_nextscheduledate::-webkit-calendar-picker-indicator,
+  #candidate_profiledate::-webkit-calendar-picker-indicator {
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
 .outerformdiv{
     width: 100%;
     display: flex;
-  
+    user-select: none;
     flex-wrap: wrap;
    
    

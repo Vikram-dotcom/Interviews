@@ -7,8 +7,21 @@ body{
     margin: 0 auto;
     padding: 20px;
     overflow-x: auto; /* Enable horizontal scroll on small screens */
+    user-select: none;
   }
-  
+  #nextScheduleDate{
+    border-radius: 7px;
+    outline: none;
+    border: 1px solid #ccc;
+    padding: 7px;
+    cursor: pointer;
+  }
+    #nextScheduleDate::-webkit-calendar-picker-indicator {
+      position: absolute;
+      width: 100%;
+      opacity: 0;
+      cursor: pointer;
+  }
   .candidate-listcontainer h1 {
     margin-bottom: 30px;
     font-size: 40px;
@@ -31,7 +44,8 @@ body{
  
   .filter-section select,
   .filter-section input[type="number"],
-  .filter-section input[type="text"] {
+  .filter-section input[type="text"],
+  .filter-section input[type="date"] {
     display: block;
     padding: 8px;
     font-size: 14px;
