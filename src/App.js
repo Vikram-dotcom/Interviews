@@ -4,6 +4,7 @@ import CandidateForm from './components/candidateDetails';
 import CandidateList from './pages/list/list2';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SpreadsheetUpload from './readingspreadsheet/readingSpreadsheet';
+import NextScheduleList from './pages/nextschedule/nextschedule';
 
 const App = () => {
   return (
@@ -29,6 +30,13 @@ const App = () => {
                         <SpreadsheetUpload />                 
                     }
                   /> 
+                   <Route
+                    path="/NextSchedule"
+                    element={                  
+                        <NextScheduleList />                 
+                    }
+                  /> 
+
             </Route>
         </Routes>     
       </BrowserRouter>

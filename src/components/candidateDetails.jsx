@@ -38,6 +38,7 @@ const CandidateForm = () => {
     candidate_slot:'',
     candidate_nextscheduledate: '',
     candidate_photo: null,
+    candidate_NextRound: ''
   });
 
   const handleInput = (event) => {
@@ -96,6 +97,24 @@ const CandidateForm = () => {
         }));
       }
     break;
+
+    case 'candidate_status':
+      // console.log(value);
+    if (value === 'ER') {
+      setFormData(prev => ({
+        ...prev,
+        candidate_nextscheduledate : '',
+        [name] : value
+      }));
+      
+    }else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    
+    }
+  break;
       default:
        
         setFormData((prev) => ({
@@ -154,6 +173,7 @@ const CandidateForm = () => {
         candidate_nextscheduledate: '',
         candidate_slot: '',
         candidate_photo: null,
+        candidate_NextRound: ''
       });
     } catch (error) {
       console.error('Error submitting candidate data:', error);
@@ -224,7 +244,7 @@ const CandidateForm = () => {
         
             
           <label style={{color:'#827e7e'}} htmlFor="candidate_status">Status:</label>
-          <select style={{color:'#827e7e'}}  id="candidate_status" name="candidate_status" value={formData.candidate_status} onChange={handleChange} >
+          <select style={{color:'#827e7e'}}  id="candidate_status" name="candidate_status" value={formData.candidate_status}  onChange={handleChange} >
             <option value="">Select Status</option>
             <option value="ER">ER</option>
             <option value="Next Round">Next Round</option>
@@ -245,7 +265,7 @@ const CandidateForm = () => {
         
         <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_nextscheduledate">Next Schedule Date:</label>
-          <input style={{color:'#827e7e'}} type="date" id="candidate_nextscheduledate" name="candidate_nextscheduledate" value={formData.candidate_nextscheduledate} onChange={handleChange} />
+          <input style={{color:'#827e7e'}} type="date" id="candidate_nextscheduledate" name="candidate_nextscheduledate" disabled = {formData.candidate_status === 'ER'} value={formData.candidate_nextscheduledate} onChange={handleChange} />
         </div>
         <div className="form-details">
           <label style={{color:'#827e7e'}} htmlFor="candidate_drivelink">Drive Link:</label>

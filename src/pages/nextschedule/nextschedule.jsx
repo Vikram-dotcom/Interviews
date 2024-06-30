@@ -1,50 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase'; 
-import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
-import "./list2.css"; 
+import { collection, getDocs, doc, updateDoc, query, where } from 'firebase/firestore';
+import "./nextschedule.css"; 
 import { Link } from 'react-router-dom';
 
-const CandidateList = () => {
+const NextScheduleList = () => {
     const [candidates, setCandidates] = useState([]);
     const [filteredCandidates, setFilteredCandidates] = useState([]);
     const [filterStatus, setFilterStatus] = useState(''); 
     const [filterMarks, setFilterMarks] = useState(''); 
-    const [filterDate,setFilterDate] = useState('');
+    const [filterDate,setFilterDate] = useState(new Date().toISOString().split('T')[0]);
     const [FilterScheduleDate,setFilterScheduleDate] = useState('');
     const [filterName, setnameFilter] = useState(''); 
 
     useEffect(() => {
-        const fetchData = async () => {
-            
+        console.log(filterDate);
+        const fetchData = async (scheduledate) => {
             try {
-                const dataSnapshot = await getDocs(collection(db, 'candidates'));
-                const data = dataSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const q = query(collection(db, 'candidates'), where('candidate_nextscheduledate', '==', scheduledate));
+                const querySnapshot = await getDocs(q);
+                const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log(data)
                 //data.sort((a, b) => a.profileID - b.profileID);
-                const slotOrder = ['Blue', 'Green', 'Orange'];
+                const Nextround = ['Excel', 'Programming', 'SQL'];
 
                 const groupedCandidates = data.reduce((acc, candidate) => {
-                  if (!acc[candidate.candidate_slot]) {
-                      acc[candidate.candidate_slot] = [];
+                  if (!acc[candidate.candidate_NextRound]) {
+                      acc[candidate.candidate_NextRound] = [];
                   }
-                  acc[candidate.candidate_slot].push(candidate);
+                  acc[candidate.candidate_NextRound].push(candidate);
                   console.log(candidate.candidate_nextscheduledate)
                   return acc;
               }, {});
           console.log('groupedCandidates',groupedCandidates)
-              const sortedCandidates = slotOrder.flatMap(slot => groupedCandidates[slot] || []);
+              const sortedCandidates = Nextround.flatMap(round => groupedCandidates[round] || []);
               console.log('sortedCandidates',sortedCandidates)
                 setCandidates(sortedCandidates);
                 setFilteredCandidates(sortedCandidates); 
-                
             } catch (error) {
                 console.error('Error fetching candidates: ', error);
             }
         };
-        
-        fetchData();
-    }, []);
+
+        fetchData(filterDate);
+    }, [filterDate]);
 
     useEffect(() => {
+        
         const filterData = () => {
             let filteredData = [...candidates]; 
 
@@ -77,7 +79,7 @@ const CandidateList = () => {
         };
 
         filterData();
-    }, [filterStatus, filterMarks, filterName, filterDate, FilterScheduleDate,candidates]);
+    }, [filterStatus, filterMarks, filterName, FilterScheduleDate,candidates]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -119,16 +121,6 @@ const CandidateList = () => {
                 await updateDoc(doc(db, 'candidates', candidateId), {
                     candidate_nextscheduledate: newvalue
                 });
-                await setDoc(doc(db, 'NextSchedule', candidateId), {
-                    candidate_name: candidates.candidate_name,
-                    candidate_scheduledate: newvalue,
-                    candidate_round: '',
-                    candidate_status: '',
-                    candidate_notes: '',
-                    candidate_comments: '',
-                    candidate_nextscheduledate: '',
-                    candidate_NextRound: ''
-                });
                 const updatedCandidates = candidates.map(candidate => {
                     console.log(candidate.id, candidateId)
                     if (candidate.id === candidateId) {
@@ -145,9 +137,6 @@ const CandidateList = () => {
                     await updateDoc(doc(db, 'candidates', candidateId), {
                         candidate_NextRound: newvalue
                     });
-                    await updateDoc(doc(db, 'NextSchedule', candidateId), {
-                        candidate_round: newvalue
-                    })
                     const updatedCandidates = candidates.map(candidate => {
                         console.log(candidate.id, candidateId)
                         if (candidate.id === candidateId) {
@@ -187,7 +176,7 @@ const CandidateList = () => {
                     <img style={{ display: 'inline-block', width: '51px' }} src="https://static.vecteezy.com/system/resources/thumbnails/014/391/893/small_2x/home-icon-isolated-on-transparent-background-black-symbol-for-your-design-free-png.png" />
                 </Link>
                 <Link to="/upload">
-                <h1 style={{ display: 'inline-block',color:'black' }}>Candidates List</h1>
+                <h1 style={{ display: 'inline-block',color:'black' }}>Scheduled Candidates</h1>
                 </Link>
             </div>
             <div style={{ marginLeft: '0' }} className="filter-section">
@@ -222,7 +211,7 @@ const CandidateList = () => {
             </div>
 
             <div className='filter-section'>
-                <label htmlFor='dateFilter'>Date</label>
+                <label htmlFor='dateFilter'>Scheduled Date</label>
                 <input
                     type="date"
                     id="dateFilter"
@@ -251,16 +240,18 @@ const CandidateList = () => {
                 <thead style={{ borderRadius: '7px' }}>
                     <tr>
                         <th style={{ width: '7%', borderRight: '1px solid #cbcaca' }}>Profile#</th>
-                        <th style={{ width: '8%', borderRight: '1px solid #cbcaca' }}>Date</th>
+                       
                         <th style={{ width: '13%', borderRight: '1px solid #cbcaca' }}>Name</th>
-                        <th style={{ width: '5%', borderRight: '1px solid #cbcaca' }}>Marks</th>
-                        <th style={{ width: '8%', borderRight: '1px solid #cbcaca' }}>Education</th>
+                        {/* <th style={{ width: '5%', borderRight: '1px solid #cbcaca' }}>Marks</th>
+                        <th style={{ width: '8%', borderRight: '1px solid #cbcaca' }}>Education</th> */}
+                        
+                        <th style={{ width: '12%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Round</th>
                         <th style={{ width: '5%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Status</th>
                         <th style={{ width: '8%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Phone</th>
                         <th style={{ width: '15%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Comments</th>
                         <th style={{ width: '15%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Notes</th>
                         <th style={{ width: '15%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Next Schedule</th>
-                        <th style={{ width: '12%', borderRight: '1px solid #cbcaca', textAlign: 'center' }}>Next Round</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -268,10 +259,12 @@ const CandidateList = () => {
                         filteredCandidates.map(candidate => (
                             <tr key={candidate.id} style={{ backgroundColor: 'white', boxShadow: `inset -0.5px -1px 0px ${candidate.candidate_slot}`}}>
                                 <td style={{ textAlign: 'center'}}>{candidate.profileID}</td>
-                                <td style={{ textAlign: 'left' }}>{formatDate(candidate.candidate_profiledate)}</td>
+                                
                                 <td style={{ userSelect:'text' }}>{candidate.candidate_name}</td>
-                                <td style={{ textAlign: 'center' }}>{candidate.candidate_marks}</td>
-                                <td>{candidate.candidate_education}</td>
+                                {/* <td style={{ textAlign: 'center' }}>{candidate.candidate_marks}</td>
+                                <td>{candidate.candidate_education}</td> */}
+                                <td style={{ userSelect:'text' }}>{candidate.candidate_NextRound}</td>
+
                                 <td style={{ textAlign: 'center' }}>
                                     <select className="listselect" style={{ borderRadius: '7px' }}
                                         value={candidate.candidate_status}
@@ -293,7 +286,7 @@ const CandidateList = () => {
                                         />
                                     </div>
                                 </td>
-                                <td style={{ textAlign: 'center' }}>
+                                {/* <td style={{ textAlign: 'center' }}>
                                     <select className="listselect" style={{ borderRadius: '7px' }}
                                         value={candidate.candidate_NextRound}
                                         onChange={e => handleStatusChange(e, candidate.id, 'candidate_NextRound')}
@@ -307,7 +300,7 @@ const CandidateList = () => {
                                         <option value="Programming">Programming</option>
                                         <option value="SQL">SQL</option>
                                     </select>
-                                </td>
+                                </td> */}
                             </tr>
                         ))
                     ) : (
@@ -321,4 +314,4 @@ const CandidateList = () => {
     );
 };
 
-export default CandidateList;
+export default NextScheduleList;

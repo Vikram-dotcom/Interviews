@@ -80,8 +80,8 @@ body{
     justify-content: space-around;
     flex-wrap: wrap;
     width: 100%;
-    height:calc(100% - 105px);
-   
+    /* height:calc(100% - 105px); */
+    height:calc(100% - 120px);
     background:  #fff;
     border: 1px solid #ccc;
     border-radius: 8px;
